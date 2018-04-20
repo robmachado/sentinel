@@ -16,7 +16,7 @@ class Memory
     public $freeservermemory;
     /**
      * @var float
-     */    
+     */
     public $memoryusage;
     /**
      * @var float
@@ -58,10 +58,10 @@ class Memory
         $m['totalservermemory'] = Format::bytes($this->totalservermemory);
         $m['freeservermemory'] = Format::bytes($this->freeservermemory);
         $m['totalswap'] = Format::bytes($this->totalswap);
-        $m['memoryusage'] = $this->memoryusage;
-        $m['swapusage'] = $this->swapusage;
+        $m['memoryusage'] = round($this->memoryusage, 0);
+        $m['swapusage'] = round($this->swapusage, 0);
         $m['phpmemoryallocate'] = Format::bytes($this->phpmemoryallocate);
-        $m['phpmemoryusage'] = Format::bytes($this->phpmemoryusage);
+        $m['phpmemoryusage'] = Format::bytes($this->phpmemoryusage, 0);
         $m['phppeakmemoryusage'] = Format::bytes($this->phppeakmemoryusage);
         return json_encode($m);
     }
@@ -69,7 +69,7 @@ class Memory
     /**
      * Get corrent memory usage information
      * @return void
-     */    
+     */
     protected function calculate()
     {
         $free = shell_exec('free -btl');
@@ -77,12 +77,12 @@ class Memory
         $memArr = explode("\n", $free);
         $mArr = [];
         foreach ($memArr as $ma) {
-            $ma = preg_replace('!\s+!', ' ',$ma);
+            $ma = preg_replace('!\s+!', ' ', $ma);
             $mArr[] = $ma;
         }
         $mem = explode(" ", $mArr[1]);
-        $mem = array_filter($mem);
-        $mem = array_merge($mem);
+        //$mem = array_filter($mem);
+        //$mem = array_merge($mem);
         $swap = explode(" ", $mArr[4]);
         $swap_usage = round($swap[2]/$swap[1]*100, 1);
         $memory_usage = round($mem[2]/$mem[1] * 100, 1);

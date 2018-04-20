@@ -14,7 +14,7 @@ class System
     public $osname = '';
     /**
      * @var string
-     */    
+     */
     public $hostname = '';
     /**
      * @var string
@@ -26,12 +26,8 @@ class System
     public $osversion = '';
     /**
      * @var string
-     */    
+     */
     public $ostype = '';
-    /**
-     * @var int
-     */    
-    public $servercores = 1;
     /**
      * @var int
      */
@@ -46,12 +42,20 @@ class System
     public $uptimeminutes = 0;
     /**
      * @var int
-     */    
+     */
     public $cores = 1;
     /**
-     * @var array
+     * @var float
      */
-    public $load = [];
+    public $loadm1;
+    /**
+     * @var float
+     */
+    public $loadm5;
+        /**
+     * @var float
+     */
+    public $loadm15;
     /**
      * @var int
      */
@@ -102,17 +106,18 @@ class System
      */
     protected function systemCores()
     {
-        switch($this->os) {
-            case('Linux'):
+        $cmd = '';
+        switch ($this->os) {
+            case ('Linux'):
                 $cmd = "cat /proc/cpuinfo | grep processor | wc -l";
                 break;
-            case('Freebsd'):
+            case ('Freebsd'):
                 $cmd = "sysctl -a | grep 'hw.ncpu' | cut -d ':' -f2";
                 break;
         }
         $cpuCoreNo = intval(trim(shell_exec($cmd)));
         $this->cores = empty($cpuCoreNo) ? 1 : $cpuCoreNo;
-   }
+    }
    
     /**
      * Returns the server uptime
@@ -123,23 +128,23 @@ class System
         $uptimestring = file_get_contents('/proc/uptime');
         $ticks = explode(" ", $uptimestring);
         $min = $ticks[0]/60;
-        $hours = $min/60; 
-        $this->uptimedays = floor($hours/24); 
-        $this->uptimehours = floor($hours-($days*24)); 
-        $this->uptimeminutes = floor($min-($days*60*24)-($hours*60)); 
+        $hours = $min/60;
+        $this->uptimedays = floor($hours/24);
+        $this->uptimehours = floor($hours-($this->uptimedays*24));
+        $this->uptimeminutes = floor($min-($this->uptimedays*60*24)-($this->uptimehours*60));
     }
     
    /**
     * Get system load as percentage
-    * NOTE: This search must be done with a minimum interval of 15 minutes 
+    * NOTE: This search must be done with a minimum interval of 15 minutes
     * @return void
     */
-   protected function systemLoad()
-   {
+    protected function systemLoad()
+    {
         $rs = sys_getloadavg();
-        $this->load[1] = round(($rs[0]*100)/$this->servercores, 2);
-        $this->load[5] = round(($rs[1]*100)/$this->servercores, 2);
-        $this->load[15] = round(($rs[2]*100)/$this->servercores, 2);
+        $this->loadm1 = round(($rs[0]*100)/$this->cores, 1);
+        $this->loadm5 = round(($rs[1]*100)/$this->cores, 1);
+        $this->loadm15 = round(($rs[2]*100)/$this->cores, 1);
     }
     
     /**

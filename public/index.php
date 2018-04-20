@@ -1,23 +1,36 @@
 <?php
-require_once '../src/ServerMonitor.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 'On');
 
-$monitor = new Sentinel();
+require_once '../vendor/autoload.php';
 
-$memoryinfo = "<small><p>Memoria Total: $monitor->totalservermemory<br>Memoria Livre: $monitor->freeservermemory <br>PHP Alocada: $monitor->phpmemoryallocate<br>PHP Usada: $monitor->phpmemoryusage<br>PHP Peak: $monitor->phppeakmemoryusage</p></small>";
+use Sentinel\Sentinel;
 
-$memory = round($monitor->memoryusage,0);
-$load = round($monitor->load[2],1);
-$disk = $monitor->diskusage;
-$swap = "<small><p>SWAP Total: $monitor->totalswap<br>Swap Usado: $monitor->swapusage</p></small>";
-$uptime = "<small><p>Uptime: $monitor->uptimedays dias, $monitor->uptimehours horas e $monitor->uptimeminutes minutos</p></small>";
+$s = new Sentinel();
+$s->search();
 
-$descriptions = "<h3>Sistema</h3><small><p>OS: $monitor->os $monitor->ostype <br>Release : $monitor->osrelease $monitor->osversion <br>Kernel: $monitor->kernel <br>Nucleos: $monitor->servercores<p></small>";
 
-/*
+$memory = json_decode($s->memory->formated());
+$system = json_decode($s->system->formated());
+$disk = json_decode($s->disk->formated());
+$connections = json_decode($s->connections->formated());
+
 echo "<pre>";
-print_r($load);
+print_r($s);
 echo "</pre>";
-die;*/
+
+
+$memoryinfo = "<small><p>Memoria Total: $memory->totalservermemory<br>Memoria Livre: $memory->freeservermemory <br>PHP Alocada: $memory->phpmemoryallocate<br>PHP Usada: $memory->phpmemoryusage<br>PHP Peak: $memory->phppeakmemoryusage</p></small>";
+
+$swap = "<small><p>SWAP Total: $memory->totalswap<br>Swap Usado: $memory->swapusage</p></small>";
+$uptime = "<small><p>Uptime: $system->uptimedays dias, $system->uptimehours horas e $system->uptimeminutes minutos</p></small>";
+
+$descriptions = "<h3>Sistema</h3><small><p>OS: $system->os $system->ostype <br>Release : $system->osrelease $system->osversion <br>Nucleos: $system->cores<p></small>";
+$activeconn = "<small><p>Conexões Ativas: $connections->number<br>";
+foreach($connections->iplist as $ip) {
+    $activeconn .= "$ip<br>";
+}
+
 $template = "<!DOCTYPE html>
 <html lang=\"pt_br\">
 <head>
@@ -38,15 +51,15 @@ $template = "<!DOCTYPE html>
         <hr>
         <div class=\"row\">
             <div class=\"col-sm\">
-                <div class=\"GaugeMeter\" id=\"memory\" data-percent=\"$memory\" data-append=\"%\" data-size=\"200\" data-theme=\"Blue\" data-back=\"RGBa(0,0,0,.3)\" data-animate_gauge_colors=\"1\" data-animate_text_colors=\"1\" data-width=\"20\" data-label=\"Memory\" data-style=\"Arch\" data-label_color=\"#333333\"></div>
+                <div class=\"GaugeMeter\" id=\"memory\" data-percent=\"$memory->memoryusage\" data-append=\"%\" data-size=\"200\" data-theme=\"Blue\" data-back=\"RGBa(0,0,0,.3)\" data-animate_gauge_colors=\"1\" data-animate_text_colors=\"1\" data-width=\"15\" data-label=\"Memory\" data-style=\"Arch\" data-label_color=\"#333333\"></div>
                      $memoryinfo
             </div>
             <div class=\"col-sm\">
-                <div class=\"GaugeMeter\" id=\"load\" data-percent=\"$load\" data-append=\"%\" data-size=\"200\" data-theme=\"Blue\" data-back=\"RGBa(0,0,0,.3)\" data-animate_gauge_colors=\"1\" data-animate_text_colors=\"1\" data-width=\"20\" data-label=\"Load\" data-style=\"Arch\" data-label_color=\"#333333\"></div>
+                <div class=\"GaugeMeter\" id=\"load\" data-percent=\"$system->loadm15\" data-append=\"%\" data-size=\"200\" data-theme=\"Blue\" data-back=\"RGBa(0,0,0,.3)\" data-animate_gauge_colors=\"1\" data-animate_text_colors=\"1\" data-width=\"15\" data-label=\"Load\" data-style=\"Arch\" data-label_color=\"#333333\"></div>
                     $uptime
             </div>
             <div class=\"col-sm\">
-                <div class=\"GaugeMeter\" id=\"disk\" data-percent=\"28\" data-append=\"%\" data-size=\"200\" data-theme=\"Blue\" data-back=\"RGBa(0,0,0,.3)\" data-animate_gauge_colors=\"1\" data-animate_text_colors=\"1\" data-width=\"20\" data-label=\"Disk\" data-style=\"Arch\" data-label_color=\"#333333\"></div>
+                <div class=\"GaugeMeter\" id=\"disk\" data-percent=\"$disk->usage\" data-append=\"%\" data-size=\"200\" data-theme=\"Blue\" data-back=\"RGBa(0,0,0,.3)\" data-animate_gauge_colors=\"1\" data-animate_text_colors=\"1\" data-width=\"15\" data-label=\"Disk\" data-style=\"Arch\" data-label_color=\"#333333\"></div>
                 $swap
             </div>
         </div>
@@ -55,8 +68,7 @@ $template = "<!DOCTYPE html>
                 $descriptions
             </div>
             <div class=\"col-sm\">
-            </div>
-            <div class=\"col-sm\">
+                $activeconn
             </div>
         </div>    
     </div>

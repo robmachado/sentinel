@@ -12,11 +12,11 @@ class Disk
     public $totalspace;
     /**
      * @var float
-     */    
+     */
     public $freespace;
     /**
      * @var float
-     */    
+     */
     public $usage;
     
     public function __construct()
@@ -32,8 +32,8 @@ class Disk
     {
         $m = [];
         $m['totalspace'] = Format::bytes($this->totalspace);
-        $m['freespace'] = Format::bytes($this->freespace); 
-        $m['usage'] = $this->usage;
+        $m['freespace'] = Format::bytes($this->freespace);
+        $m['usage'] = round($this->usage, 0);
         return json_encode($m);
     }
     
@@ -43,9 +43,9 @@ class Disk
      */
     protected function diskUsage()
     {
-        $this->totalspace = disk_total_space ('/');
-        $this->freespace = disk_free_space  ('/');
+        $this->totalspace = disk_total_space('/');
+        $this->freespace = disk_free_space('/');
         $diskuse = round(100-(($this->freespace/$this->totalspace)*100), 2);
-        $this->diskusage = $diskuse;
+        $this->usage = $diskuse;
     }
 }
