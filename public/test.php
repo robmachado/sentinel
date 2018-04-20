@@ -2,6 +2,9 @@
 require_once '../src/ServerMonitor.php';
 
 $monitor = new ServerMonitor();
+echo $monitor->phpmemoryallocate;
+die;
+
 $em = $monitor->httpConnections();
 
 $em = $monitor->numberProcesses();
