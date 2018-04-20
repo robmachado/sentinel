@@ -8,29 +8,18 @@ use Sentinel\Sentinel;
 
 $s = new Sentinel();
 $s->search();
-
-
 $memory = json_decode($s->memory->formated());
 $system = json_decode($s->system->formated());
 $disk = json_decode($s->disk->formated());
 $connections = json_decode($s->connections->formated());
-
-echo "<pre>";
-print_r($s);
-echo "</pre>";
-
-
 $memoryinfo = "<small><p>Memoria Total: $memory->totalservermemory<br>Memoria Livre: $memory->freeservermemory <br>PHP Alocada: $memory->phpmemoryallocate<br>PHP Usada: $memory->phpmemoryusage<br>PHP Peak: $memory->phppeakmemoryusage</p></small>";
-
 $swap = "<small><p>SWAP Total: $memory->totalswap<br>Swap Usado: $memory->swapusage</p></small>";
 $uptime = "<small><p>Uptime: $system->uptimedays dias, $system->uptimehours horas e $system->uptimeminutes minutos</p></small>";
-
 $descriptions = "<h3>Sistema</h3><small><p>OS: $system->os $system->ostype <br>Release : $system->osrelease $system->osversion <br>Nucleos: $system->cores<p></small>";
 $activeconn = "<small><p>Conexões Ativas: $connections->number<br>";
 foreach($connections->iplist as $ip) {
     $activeconn .= "$ip<br>";
 }
-
 $template = "<!DOCTYPE html>
 <html lang=\"pt_br\">
 <head>
